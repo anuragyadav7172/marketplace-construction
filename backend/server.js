@@ -17,12 +17,14 @@ app.use(morgan('dev'));
 const authRoutes = require("./routes/auth");
 const productRoutes = require("./routes/product");
 const cartRoutes = require("./routes/cart");
+const orderRoutes = require("./routes/order");
 
 // simple root route
 app.get('/', (req, res) => res.send('Market Place API running'));
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api/orders", orderRoutes);
 
 // connect to MongoDB
 const start = async () => {
