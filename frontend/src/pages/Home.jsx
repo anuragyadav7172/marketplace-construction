@@ -1,38 +1,29 @@
-import React, { useEffect, useState } from "react";
+// src/pages/Home.jsx
+import { useEffect, useState } from "react";
 import { getProducts } from "../api/productApi";
+import ProductCard from "../components/ProductCard";
+import "../css/home.css";
 
-function Home() {
+const Home = () => {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    loadProducts();
+    getProducts().then((res) => setProducts(res.data));
   }, []);
 
-  const loadProducts = async () => {
-    try {
-      const res = await getProducts();
-      setProducts(res.data);
-    } catch (err) {
-      console.log("Error loading products:", err.message);
-    }
-  };
-
   return (
-    <div>
-      <h1>Construction Materials</h1>
+    <div className="container mt-4">
+      <h2 className="fw-bold mb-4">Construction Materials</h2>
 
-      {products.length === 0 ? (
-        <p>Loading...</p>
-      ) : (
-        products.map((p) => (
-          <div key={p._id}>
-            <h3>{p.name}</h3>
-            <p>₹{p.price}</p>
+      <div className="row g-4">
+        {products.map((product) => (
+          <div className="col-md-4 col-lg-3" key={product._id}>
+            <ProductCard product={product} />
           </div>
-        ))
-      )}
+        ))}
+      </div>
     </div>
   );
-}
+};
 
 export default Home;

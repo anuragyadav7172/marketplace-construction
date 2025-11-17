@@ -1,42 +1,62 @@
 import { useEffect, useState, useContext } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { getProductById } from "../api/productApi";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import toast from "react-hot-toast";
 
 const ProductDetails = () => {
   const { id } = useParams();
-  const { token } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const { token, refreshCart } = useContext(AuthContext);
   const [product, setProduct] = useState(null);
 
   useEffect(() => {
-    getProductById(id).then(res => setProduct(res.data));
-  }, []);
+    getProductById(id).then((res) => setProduct(res.data));
+  }, [id]);
 
   const addToCart = async () => {
-    if (!token) return alert("Please login first");
+    if (!token) {
+      toast.error("Please login first");
+      return navigate("/login");
+    }
 
-    await axios.post(
-      "http://localhost:5000/api/cart/add",
-      { productId: product._id, quantity: 1 },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    try {
+      await axios.post(
+        "http://localhost:5000/api/cart/add",
+        { productId: product._id, quantity: 1 },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    alert("Added to cart");
+      refreshCart();
+      toast.success("Added to cart");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to add to cart");
+    }
   };
 
-  if (!product) return <p>Loading...</p>;
+  if (!product) return <p className="container mt-5">Loading...</p>;
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold">{product.name}</h1>
-      <p className="mt-2">{product.description}</p>
-      <p className="text-green-600 text-xl font-bold mt-3">₹{product.price}</p>
+    <div className="container mt-5">
+      <div className="card p-4 shadow-sm">
+        <h2 className="fw-bold">{product.name}</h2>
 
-      <button onClick={addToCart}
-        className="mt-4 bg-green-600 text-white px-4 py-2 rounded">
-        Add to Cart
-      </button>
+        <p className="text-muted mt-2">{product.description}</p>
+
+        <h4 className="text-success fw-bold mt-3">
+          ₹{product.price}
+        </h4>
+
+        <button 
+          onClick={addToCart} 
+          className="btn btn-success mt-4"
+        >
+          Add to Cart
+        </button>
+      </div>
     </div>
   );
 };

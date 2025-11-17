@@ -1,37 +1,58 @@
+// src/pages/Login.jsx
 import { useState, useContext } from "react";
-import { loginUser } from "../api/authApi";
+import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import "../css/auth.css";
 
 const Login = () => {
-  const [form, setForm] = useState({ email: "", password: "" });
   const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
+
     try {
-      const res = await loginUser(form);
-      login(res.data.user, res.data.token);
-      alert("Login successful");
-      window.location.href = "/";
-    } catch (error) {
-      alert("Invalid email or password");
+      const res = await axios.post("http://localhost:5000/api/auth/login", { email, password });
+      const { user, token } = res.data;
+
+      login(user, token);
+      toast.success("Logged in");
+      navigate("/");
+    } catch (err) {
+      toast.error("Invalid credentials");
     }
   };
 
   return (
-    <div className="p-4 max-w-md mx-auto">
-      <h2 className="text-xl font-bold mb-4">Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input className="border w-full p-2 mb-3"
-          type="email" name="email" placeholder="Email" onChange={handleChange} />
-        <input className="border w-full p-2 mb-3"
-          type="password" name="password" placeholder="Password" onChange={handleChange} />
-        <button className="bg-green-600 text-white px-4 py-2 rounded">Login</button>
-      </form>
+    <div className="auth-container">
+      <div className="card p-4 shadow-sm">
+        <h3 className="mb-3 fw-bold">Login</h3>
+
+        <form onSubmit={handleSubmit}>
+          <input 
+            className="form-control mb-3"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e)=>setEmail(e.target.value)}
+          />
+
+          <input 
+            className="form-control mb-3"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e)=>setPassword(e.target.value)}
+          />
+
+          <button className="btn btn-primary w-100">Login</button>
+        </form>
+      </div>
     </div>
   );
 };
